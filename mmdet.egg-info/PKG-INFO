@@ -1,0 +1,164 @@
+Metadata-Version: 2.1
+Name: mmdet
+Version: 1.0rc0+unknown
+Summary: Open MMLab Detection Toolbox and Benchmark
+Home-page: https://github.com/open-mmlab/mmdetection
+Author: OpenMMLab
+Author-email: chenkaidev@gmail.com
+License: Apache License 2.0
+Keywords: computer vision,object detection
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+License-File: LICENSE
+
+
+# Code for Zero-Shot Instance Segmentation with RoI-wise Background Transformers
+
+
+## Code requirements
++ python: python3.7
++ nvidia GPU
++ pytorch1.1.0
++ GCC >=5.4
++ NCCL 2
++ the other python libs in requirement.txt
+
+## Install 
+
+```
+conda create -n RB-ZSI python=3.7 -y
+conda activate RB-ZSI
+
+conda install pytorch=1.1.0 torchvision=0.3.0 cudatoolkit=10.0 -c pytorch
+
+pip install cython && pip --no-cache-dir install -r requirements.txt
+   
+python setup.py develop
+```
+
+## Dataset prepare
+
+
+- Download the train and test annotations files for RB-ZSI from [annotations](https://drive.google.com/drive/folders/1TLbmDoRiKcMGq1zyVahXtGVTdkvI9Dus?usp=sharing), put all json label file to
+
+    (The annotation file is from [Zero-shot-Instance-Segmentation](https://github.com/zhengye1995/Zero-shot-Instance-Segmentation))
+    ```
+    data/coco/annotations/
+    ```
+    
+
+
+- Download MSCOCO-2014 dataset and unzip the images it to path： 
+    ```
+    data/coco/train2014/
+    data/coco/val2014/
+    ```
+
+
+- **Training**:
+     - 48/17 split:
+       ```
+          chmod +x tools/dist_train.sh
+          ./tools/dist_train.sh configs/RB-ZSI/48_17/train/RB-ZSI.py 2
+        ```
+        
+    - 65/15 split:
+      ```
+      chmod +x tools/dist_train.sh
+      ./tools/dist_train.sh configs/RB-ZSI/65_15/train/RB-ZSI.py 2
+      ```
+          
+- **Inference & Evaluate**:
+
+    + **RB-ZSI task**:
+
+        - 48/17 split RB-ZSI task:
+            - download [48/17](https://drive.google.com/file/d/1o4uRse8Rhnz-ea5HsvLTYaOhfuVlac_e/view?usp=share_link) RB-ZSI model, put it in checkpoints/RB-ZSI-selector-2_48_17.pth
+            
+            - inference:
+                ```
+                chmod +x tools/dist_test.sh
+                ./tools/dist_test.sh configs/RB-ZSI/48_17/test/zsis/RB-ZSI.py checkpoints/48_17/RB-ZSI-selector-2.pth 4 --json_out results/RB-ZSI_48_17.json
+                ```
+            - our results RB-ZSI_48_17.bbox.json and RB-ZSI_48_17.segm.json can also downloaded from [RB-ZSI_48_17_reults](https://drive.google.com/drive/folders/1H-GCA2pBqC3lKxN-oIJZFSvv9Ayc8YB2?usp=share_link).
+            - evaluate:
+                - for RB-ZSD performance
+                    ```
+                    python tools/rb-zsi_coco_eval.py results/RB-ZSI-selector-2_48_17.bbox.json --ann data/coco/annotations/instances_val2014_unseen_48_17.json
+                    ```
+                - for RB-ZSI performance
+                    ```
+                    python tools/rb-zsi_coco_eval.py results/RB-ZSI-selector-2_48_17.segm.json --ann data/coco/annotations/instances_val2014_unseen_48_17.json --types segm
+                    ```
+        - 65/15 split RB-ZSI task:
+            - download [65/15](https://drive.google.com/file/d/1ARA399oGzU_8C0OXtNc52pLV3yOFirX5/view?usp=share_link) RB-ZSI model, put it in checkpoints/RB-ZSI-selector-2_65_15.pth
+            - inference:
+                ```
+                chmod +x tools/dist_test.sh
+                ./toools/dist_test.sh configs/RB-ZSI/65_15/test/rb-zsi/RB-ZSI.py checkpoint_final/65_15/RB-ZSI-selector-2.pth 4 --json_out results/RB-ZSI_65_15.json
+                ```
+            - our results RB-ZSI_65_15.bbox.json and RB-ZSI_65_15.segm.json can also downloaded from [RB-ZSI_65_15_reults](https://drive.google.com/drive/folders/1gWTUDwQQsCRN2CM5yLaFwkcRlU8EKC2v?usp=share_link).
+            - evaluate:
+                - for RB-ZSD performance
+                    ```
+                    python tools/rb-zsi_coco_eval.py results/RB-ZSI-selector-2_65_15.bbox.json --ann data/coco/annotations/instances_val2014_unseen_65_15.json
+                    ```
+                - for RB-ZSI performance
+                    ```
+                    python tools/rb-zsi_coco_eval.py results/RB-ZSI-selector-2_65_15.segm.json --ann data/coco/annotations/instances_val2014_unseen_65_15.json --types segm
+                    ```
+
+    + **GZSI task**:
+
+        - 48/17 split RB-GZSI task:
+            - use the same model file RB-ZSI-selector-2_48_17.pth in RB-ZSI task   
+            - inference:
+                ```
+                chmod +x tools/dist_test.sh
+                ./tools/dist_test.sh configs/RB-ZSI/48_17/test/gzsis/RB-ZSI.py 4 --json_out results/RB-GZSI_48_17.json
+                ```
+            - our results RB-GZSI_48_17.bbox.json and RB-GZSI_48_17.segm.json can also downloaded from [RB-GZSI_48_17_reults](https://drive.google.com/drive/folders/1aSPu32S4ZB-1ObIo213deM_KxmLuioMU?usp=share_link).
+            - evaluate:
+                - for gzsd
+                    ```
+                    python tools/rb-gzsi_coco_eval.py results/RB-GZSI_48_17.bbox.json --ann data/coco/annotations/instances_val2014_gzsi_48_17.json --gzsi --num-seen-classes 48
+                    ```
+                - for gzsi
+                    ```
+                    python tools/gzsi_coco_eval.py results/RB-GZSI_48_17.segm.json --ann data/coco/annotations/instances_val2014_gzsi_48_17.json --gzsi --num-seen-classes 48 --types segm
+                    ```
+        - 65/15 split RB-GZSI task:
+            - use the same model file RB-ZSI-selector-2_65_15.pth in RB-ZSI task   
+            - inference:
+                ```
+                chmod +x tools/dist_test.sh
+                ./tools/dist_test.sh configs/RB-ZSI/65_15/test/gzsi/RB-GZSI.py checkpoint/65_15/RB-ZSI-selector-2.pth 4 --json_out results/RB-GZSI_65_15.json
+                ```
+            - our results RB-GZSI_65_15.bbox.json and RB-GZSI_65_15.segm.json can also downloaded from [RB-GZSI_65_15_reults](https://drive.google.com/drive/folders/1tBZKGa4XiC47dNzk_Q6Wx8MwRK_YzVe6?usp=share_link).
+            - evaluate:
+                - for gzsd
+                    ```
+                    python tools/rb-gzsi_coco_eval.py results/RB-GZSI_65_15.bbox.json --ann data/coco/annotations/instances_val2014_gzsi_65_15.json --gzsi --num-seen-classes 65
+                    ```
+                - for gzsi
+                    ```
+                    python tools/rb-gzsi_coco_eval.py results/RB-GZSI_65_15.segm.json --ann data/coco/annotations/instances_val2014_gzsi_65_15.json --gzsi --num-seen-classes 65 --types segm
+                    ```
+# Credits
+This project uses code from the following sources:
+- "Zero-shot-Instance-Segmentation" by user (https://github.com/zhengye1995/Zero-shot-Instance-Segmentation)
+- ZSI Paper: https://openaccess.thecvf.com/content/CVPR2021/papers/Zheng_Zero-Shot_Instance_Segmentation_CVPR_2021_paper.pdf
+
+
+# License
+
+RB-ZSI is released under MIT License.
+
+

@@ -1,0 +1,11 @@
+mmcv==0.2.14
+numpy
+matplotlib
+six
+terminaltables
+pycocotools
+torch>=1.1
+torchvision
+imagecorruptions
+albumentations>=0.3.2
+pillow==6.1
